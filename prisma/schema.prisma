@@ -1,0 +1,80 @@
+// Prisma schema for the Chronic Disease Scheduling & Reminders app.
+// Based on the schema in project.md, extended with contact fields and
+// relations so email/SMS notifications and role filtering actually work.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  PATIENT
+  NURSE
+  DOCTOR
+  ADMIN
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  DONE
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  role      Role
+  // Simple password auth for the demo. In production, store a hash only.
+  password  String?
+  createdAt DateTime @default(now())
+
+  // Patients registered by this user (a nurse/admin).
+  patientsCreated Patient[] @relation("PatientCreatedBy")
+
+  // Appointments where this user is the doctor.
+  doctorAppointments Appointment[] @relation("DoctorAppointments")
+  // Appointments this user (nurse) created.
+  nurseAppointments  Appointment[] @relation("NurseAppointments")
+}
+
+model Patient {
+  id        String   @id @default(uuid())
+  code      String   @unique
+  name      String
+  email     String?
+  phone     String?
+  createdAt DateTime @default(now())
+
+  createdById String?
+  createdBy   User?   @relation("PatientCreatedBy", fields: [createdById], references: [id])
+
+  appointments Appointment[]
+}
+
+model Appointment {
+  id        String            @id @default(uuid())
+  patientId String
+  doctorId  String
+  nurseId   String
+  status    AppointmentStatus @default(PENDING)
+  date      DateTime
+  reason    String?
+  reminderSent Boolean        @default(false)
+  createdAt DateTime          @default(now())
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor  User    @relation("DoctorAppointments", fields: [doctorId], references: [id])
+  nurse   User    @relation("NurseAppointments", fields: [nurseId], references: [id])
+
+  @@index([doctorId])
+  @@index([nurseId])
+  @@index([patientId])
+  @@index([date])
+}
