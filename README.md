@@ -196,3 +196,5 @@ src/
 - The Prisma schema extends the one in `project.md` with contact fields
   (`phone`, patient `email`/`phone`), named relations and a `reminderSent`
   flag so notifications and role-scoping actually work.
+
+VERCEL
