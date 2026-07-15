@@ -23,7 +23,7 @@ npm install
 
 # 2. Create your .env from the template
 cp .env.example .env
-#    → fill in DATABASE_URL / DIRECT_URL (see section 3)
+#    → fill in DATABASE_URL
 
 # 3. Create the database tables
 npm run db:migrate     # applies prisma/migrations (or: npm run db:push)
@@ -49,7 +49,6 @@ docker run -d --name docapp-postgres \
 Then in `.env`:
 ```
 DATABASE_URL="postgresql://docapp:docapp@localhost:5433/docapp?schema=public"
-DIRECT_URL="postgresql://docapp:docapp@localhost:5433/docapp?schema=public"
 ```
 
 Remove it when you're done (leaves no trace in the repo):
@@ -73,13 +72,12 @@ Everything is a placeholder in `.env.example`.
 ### 🗄️ Database — Postgres (required)
 Any Postgres works. Easiest options:
 - **Vercel Postgres / Prisma Postgres** — Vercel dashboard → *Storage* → *Create Database*.
-  Copy the `DATABASE_URL` (pooled) and `DIRECT_URL` (direct) it gives you.
+  Copy the `DATABASE_URL` (pooled) it gives you.
 - **Neon / Supabase / local Postgres** — any connection string works too.
 
 Set:
 ```
 DATABASE_URL=...   # pooled connection (runtime)
-DIRECT_URL=...     # direct connection (migrations)
 ```
 
 ### 🔐 Session secret (required)
@@ -135,7 +133,6 @@ Steps:
    | Set this name | to the value of |
    |---------------|-----------------|
    | `DATABASE_URL` | `POSTGRES_PRISMA_URL` (pooled) |
-   | `DIRECT_URL`   | `POSTGRES_URL_NON_POOLING` (direct) |
 
    (Neon/Supabase just give you a normal connection string — use it for both,
    or use their pooled + direct URLs respectively.)
@@ -144,7 +141,6 @@ Steps:
    (`/api/cron/reminders` daily at 08:00 UTC).
 5. *(Optional)* seed demo data once, pointing at your production DB:
    ```bash
-   DATABASE_URL=... DIRECT_URL=... npm run db:seed
    ```
 
 You can test the reminder job manually:

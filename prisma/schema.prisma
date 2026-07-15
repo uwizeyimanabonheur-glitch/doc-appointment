@@ -7,9 +7,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum Role {
@@ -59,15 +58,15 @@ model Patient {
 }
 
 model Appointment {
-  id        String            @id @default(uuid())
-  patientId String
-  doctorId  String
-  nurseId   String
-  status    AppointmentStatus @default(PENDING)
-  date      DateTime
-  reason    String?
-  reminderSent Boolean        @default(false)
-  createdAt DateTime          @default(now())
+  id           String            @id @default(uuid())
+  patientId    String
+  doctorId     String
+  nurseId      String
+  status       AppointmentStatus @default(PENDING)
+  date         DateTime
+  reason       String?
+  reminderSent Boolean           @default(false)
+  createdAt    DateTime          @default(now())
 
   patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
   doctor  User    @relation("DoctorAppointments", fields: [doctorId], references: [id])
