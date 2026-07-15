@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "tunnel": "ngrok http 3000",
-    "build": "prisma generate && prisma migrate deploy && next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
