@@ -21,7 +21,7 @@ async function main() {
     create: {
       name: "Alice Admin",
       email: "admin@example.com",
-      phone: "+10000000001",
+      phone: "0788888888",
       role: Role.ADMIN,
       password: DEMO_PASSWORD,
     },
@@ -33,7 +33,7 @@ async function main() {
     create: {
       name: "Nina Nurse",
       email: "nurse@example.com",
-      phone: "+10000000002",
+      phone: "0788888889",
       role: Role.NURSE,
       password: DEMO_PASSWORD,
     },
@@ -45,7 +45,7 @@ async function main() {
     create: {
       name: "Dr. David",
       email: "doctor@example.com",
-      phone: "+10000000003",
+      phone: "0788888891",
       role: Role.DOCTOR,
       password: DEMO_PASSWORD,
     },
@@ -59,7 +59,7 @@ async function main() {
     create: {
       name: "Paul Patient",
       email: "patient@example.com",
-      phone: "+10000000004",
+      phone: "0788888890",
       role: Role.PATIENT,
       password: DEMO_PASSWORD,
     },
@@ -72,7 +72,7 @@ async function main() {
       code: "PT-0001",
       name: "Paul Patient",
       email: "patient@example.com",
-      phone: "+10000000004",
+      phone: "0788888890",
       createdById: nurse.id,
     },
   });
