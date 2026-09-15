@@ -104,8 +104,8 @@ export default function AppointmentsClient({
     role === "ADMIN"
       ? "Search by patient, code, doctor or nurse…"
       : role === "PATIENT"
-      ? "Search by doctor or reason…"
-      : "Search patient by code or name…";
+        ? "Search by doctor or reason…"
+        : "Search patient by code or name…";
 
   function matches(row: Row, q: string): boolean {
     const needle = q.trim().toLowerCase();
@@ -476,9 +476,8 @@ export default function AppointmentsClient({
                 <tr
                   key={row.id}
                   onClick={() => setSelected(row)}
-                  className={`cursor-pointer hover:bg-slate-50 ${
-                    selected?.id === row.id ? "bg-brand/5" : ""
-                  }`}
+                  className={`cursor-pointer hover:bg-slate-50 ${selected?.id === row.id ? "bg-brand/5" : ""
+                    }`}
                 >
                   <td className="px-4 py-3 whitespace-nowrap">{fmt(row.date)}</td>
                   <td className="px-4 py-3">
@@ -520,29 +519,28 @@ export default function AppointmentsClient({
               <StatusBadge status={selected.status} />
               {(role === "ADMIN" ||
                 (role === "DOCTOR" && selected.doctor.id === currentUserId)) && (
-                <div className="mt-3">
-                  <div className="mb-1 text-xs text-slate-400">Change status</div>
-                  <div className="inline-flex overflow-hidden rounded-md border border-slate-300">
-                    {STATUS_ORDER.map((s) => {
-                      const active = selected.status === s;
-                      return (
-                        <button
-                          key={s}
-                          disabled={active || busy === selected.id}
-                          onClick={() => patch(selected.id, { status: s })}
-                          className={`px-3 py-1.5 text-xs font-medium transition-colors disabled:cursor-default ${
-                            active
-                              ? "bg-brand text-white"
-                              : "bg-white text-slate-600 hover:bg-slate-100"
-                          }`}
-                        >
-                          {s.charAt(0) + s.slice(1).toLowerCase()}
-                        </button>
-                      );
-                    })}
+                  <div className="mt-3">
+                    <div className="mb-1 text-xs text-slate-400">Change status</div>
+                    <div className="inline-flex overflow-hidden rounded-md border border-slate-300">
+                      {STATUS_ORDER.map((s) => {
+                        const active = selected.status === s;
+                        return (
+                          <button
+                            key={s}
+                            disabled={active || busy === selected.id}
+                            onClick={() => patch(selected.id, { status: s })}
+                            className={`px-3 py-1.5 text-xs font-medium transition-colors disabled:cursor-default ${active
+                                ? "bg-brand text-white"
+                                : "bg-white text-slate-600 hover:bg-slate-100"
+                              }`}
+                          >
+                            {s.charAt(0) + s.slice(1).toLowerCase()}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </DetailField>
             <DetailField label="Date & time">{fmt(selected.date)}</DetailField>
             <DetailField label="Patient">

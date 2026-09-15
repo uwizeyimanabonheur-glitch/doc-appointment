@@ -2,6 +2,7 @@ import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import AppShell from "@/components/AppShell";
 import PatientForm from "./PatientForm";
+import PatientsClient from "../PatientsClient";
 
 export default async function NewPatientPage() {
   const user = await requireRole(["NURSE", "ADMIN"]);
@@ -23,27 +24,17 @@ export default async function NewPatientPage() {
       <div className="grid gap-8 md:grid-cols-2">
         <PatientForm />
 
-        <div>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
-            Recently registered
-          </h2>
-          <ul className="space-y-2">
-            {patients.length === 0 && (
-              <li className="text-sm text-slate-400">No patients yet.</li>
-            )}
-            {patients.map((p) => (
-              <li key={p.id} className="card flex items-center justify-between py-3">
-                <div>
-                  <div className="font-medium text-slate-700">{p.name}</div>
-                  <div className="text-xs text-slate-400">
-                    {p.email || "no email"} · {p.phone || "no phone"}
-                  </div>
-                </div>
-                <span className="badge bg-brand/10 text-brand">{p.code}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <PatientsClient
+          initialRows={patients.map((p) => ({
+            id: p.id,
+            name: p.name,
+            email: p.email,
+            phone: p.phone,
+            code: p.code,
+            createdByName: p.createdBy?.name || null,
+          }))}
+          currentUserId={user.userId}
+        />
       </div>
     </AppShell>
   );

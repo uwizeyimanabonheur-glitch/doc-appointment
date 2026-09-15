@@ -83,8 +83,11 @@ export async function POST(req: Request) {
     include: APPOINTMENT_INCLUDE,
   });
 
-  // Fire-and-forget: notify the doctor. Errors are swallowed by notify().
-  await notifyOnBooking(appointment.id);
+  // Fire-and-forget: notify the doctor. Do not await to avoid notification
+  // provider errors blocking the API response or affecting DB persistence.
+  notifyOnBooking(appointment.id).catch((err) =>
+    console.error('notifyOnBooking failed:', (err as Error).message),
+  );
 
   return NextResponse.json({ appointment }, { status: 201 });
 }

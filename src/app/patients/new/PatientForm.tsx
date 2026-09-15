@@ -33,7 +33,10 @@ export default function PatientForm() {
       setEmail("");
       setPhone("");
       router.refresh();
-    } finally {
+    } catch (err) {
+      setError(String(err));
+    }
+    finally {
       setSaving(false);
     }
   }

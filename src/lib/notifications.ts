@@ -1,8 +1,11 @@
-// Notification helpers: email via Web3Forms, SMS via ClickSend.
+// Notification helpers: email via google app, SMS via ClickSend.
 //
 // Both functions degrade gracefully: if the relevant provider keys are
 // missing (e.g. you haven't created them yet), the message is logged to the
 // server console instead of throwing, so the whole app keeps working.
+
+// Lazy-import `nodemailer` inside `sendEmail` so a missing/invalid package
+// doesn't cause module-load failures that could break unrelated routes.
 
 type Channel = "email" | "sms";
 
@@ -26,39 +29,92 @@ export async function sendEmail(params: {
   to?: string | null;
   subject: string;
   message: string;
+  html?: string | null;
 }): Promise<NotifyResult> {
-  const accessKey = process.env.WEB3FORMS_ACCESS_KEY;
+  // Use Google App (Gmail SMTP) via nodemailer. Prefer an app password or
+  // service account SMTP configuration. Required env vars:
+  // - GMAIL_USER (email address)
+  // - GMAIL_APP_PASSWORD (app password) OR SMTP_HOST/SMTP_PORT/SMTP_USER/SMTP_PASS
 
-  if (isPlaceholder(accessKey)) {
-    console.info(
-      `[email:skipped] to=${params.to ?? "-"} subject="${params.subject}"\n${params.message}`,
-    );
+  const gmailUser = process.env.GMAIL_USER;
+  const gmailAppPassword = process.env.GMAIL_APP_PASSWORD;
+
+  // Allow custom SMTP settings to support non-Gmail SMTP providers.
+  const smtpHost = process.env.SMTP_HOST;
+  const smtpPort = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : undefined;
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASS;
+
+  const missing = !gmailUser && !smtpUser;
+  const missingAuth = !gmailAppPassword && !smtpPass;
+
+  if (missing || missingAuth) {
+    console.info(`[email:skipped] to=${params.to ?? "-"} subject="${params.subject}"\n${params.message}`);
     return { channel: "email", ok: false, skipped: true };
   }
 
   try {
-    const res = await fetch("https://api.web3forms.com/submit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({
-        access_key: accessKey,
-        subject: params.subject,
-        // Web3Forms delivers to the inbox configured on the access key.
-        // We include the intended recipient in the body + reply-to field.
-        from_name: "Chronic Care Scheduler",
-        email: params.to ?? undefined,
-        replyto: params.to ?? undefined,
-        recipient: params.to ?? undefined,
-        message: params.message,
-      }),
-    });
-    const data = (await res.json()) as { success?: boolean; message?: string };
-    if (!res.ok || !data.success) {
-      return { channel: "email", ok: false, error: data.message || `HTTP ${res.status}` };
+    // Build transport config: prefer explicit SMTP config, otherwise Gmail.
+    let transportOptions: any;
+    if (smtpHost && smtpPort && smtpUser && smtpPass) {
+      transportOptions = {
+        host: smtpHost,
+        port: smtpPort,
+        secure: smtpPort === 465, // true for 465, false for other ports
+        auth: { user: smtpUser, pass: smtpPass },
+      };
+    } else {
+      // Gmail SMTP using app password
+      transportOptions = {
+        service: 'gmail',
+        auth: { user: gmailUser, pass: gmailAppPassword },
+      };
     }
-    return { channel: "email", ok: true };
+
+    // Lazy-import nodemailer so missing packages or platform-specific
+    // failures don't throw during module load and break unrelated routes.
+    let nodemailer: typeof import('nodemailer');
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      nodemailer = await import('nodemailer');
+    } catch (impErr) {
+      console.error('Failed to import nodemailer:', (impErr as Error).message);
+      return { channel: 'email', ok: false, skipped: true, error: 'nodemailer unavailable' };
+    }
+
+    const transporter = nodemailer.createTransport(transportOptions);
+
+    // Verify transport (will throw on invalid credentials in many cases)
+    try {
+      await transporter.verify();
+    } catch (verifyErr) {
+      console.error('Email transport verify failed:', (verifyErr as Error).message);
+      return { channel: 'email', ok: false, error: (verifyErr as Error).message };
+    }
+
+    const fromAddress = process.env.EMAIL_FROM || gmailUser || smtpUser;
+
+    // Prefer explicit HTML if provided; otherwise convert plain text to basic HTML.
+    const htmlBody = params.html ?? params.message.replace(/\n/g, '<br/>');
+    // Create a simple plain-text fallback by stripping tags if html provided,
+    // otherwise use the original plain message.
+    const plainText = params.html
+      ? params.html.replace(/<[^>]+>/g, '').replace(/&nbsp;|&amp;/g, ' ')
+      : params.message;
+
+    const mailOptions = {
+      from: fromAddress,
+      to: params.to ?? undefined,
+      subject: params.subject,
+      text: plainText,
+      html: htmlBody,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Email sent:', info);
+    return { channel: 'email', ok: true };
   } catch (err) {
-    return { channel: "email", ok: false, error: (err as Error).message };
+    return { channel: 'email', ok: false, error: (err as Error).message };
   }
 }
 
@@ -116,9 +172,10 @@ export async function notify(params: {
   phone?: string | null;
   subject: string;
   message: string;
+  html?: string | null;
 }): Promise<NotifyResult[]> {
   return Promise.all([
-    sendEmail({ to: params.email, subject: params.subject, message: params.message }),
+    sendEmail({ to: params.email, subject: params.subject, message: params.message, html: params.html ?? null }),
     sendSms({ to: params.phone, message: params.message }),
   ]);
 }

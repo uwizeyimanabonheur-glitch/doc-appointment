@@ -60,14 +60,24 @@ export async function POST(req: Request) {
   let patient = null;
   for (let attempt = 0; attempt < 5 && !patient; attempt++) {
     try {
+      const patientObj = {
+        code: generateCode(),
+        name: name.trim(),
+        email: email?.trim() || null,
+        phone: phone?.trim() || null,
+        createdById: user.userId,
+      }
+
+      const creatorExists = await prisma.user.findUnique({
+        where: { id: patientObj.createdById },
+      });
+
+      if (!creatorExists) {
+        // Return meaningful object instead of throwing an erro
+        return NextResponse.json({ error: "The user creating this patient record does not exist." }, { status: 400 });
+      }
       patient = await prisma.patient.create({
-        data: {
-          code: generateCode(),
-          name: name.trim(),
-          email: email?.trim() || null,
-          phone: phone?.trim() || null,
-          createdById: user.userId,
-        },
+        data: patientObj
       });
     } catch (err) {
       // Unique constraint on code — try again with a new code.

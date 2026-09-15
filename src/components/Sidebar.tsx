@@ -16,6 +16,7 @@ export default function Sidebar({ name, role }: { name: string; role: Role }) {
     { href: "/appointments", label: "Appointments", icon: "🗓" },
   ];
   if (canRegisterPatients(role)) {
+    links.push({ href: "/patients", label: "Patients", icon: "🧾" });
     links.push({ href: "/patients/new", label: "Register Patient", icon: "＋" });
   }
   if (role === "ADMIN") {
@@ -62,9 +63,8 @@ export default function Sidebar({ name, role }: { name: string; role: Role }) {
 
       {/* Sidebar panel */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 transform flex-col border-r border-slate-200 bg-white transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0 ${
-          open ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 transform flex-col border-r border-slate-200 bg-white transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         <div className="flex items-center justify-between px-5 py-5">
           <Link
@@ -91,11 +91,10 @@ export default function Sidebar({ name, role }: { name: string; role: Role }) {
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
-                  active
+                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${active
                     ? "bg-brand/10 font-medium text-brand"
                     : "text-slate-600 hover:bg-slate-100"
-                }`}
+                  }`}
               >
                 <span className="w-5 text-center text-base">{l.icon}</span>
                 {l.label}
