@@ -1,4 +1,4 @@
-# Chronic Care Scheduler
+# Chronic Care Scheduler - Update
 
 A simple, **role-based** web app for scheduling appointments, notifications and
 reminders in chronic disease patient care. Built with Next.js (App Router),
