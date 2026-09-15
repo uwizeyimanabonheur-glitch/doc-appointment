@@ -135,24 +135,40 @@ export async function sendSms(params: {
   }
 
   try {
+    const dummyPhoneNumbers = ["0788888888",
+      "0788888889",
+      "0788888891",
+      "0788888890",
+      "0788888890"
+    ]
     const auth = Buffer.from(`${username}:${apiKey}`).toString("base64");
+    // Avoid sending sms to dummy numbers during development/testing. Just log and return success.
+    if (dummyPhoneNumbers.includes(params.to!)) {
+      console.log("[sms:skipped] to=dummy number, not sending SMS during development/testing\n", params.message);
+      return { channel: "sms", ok: true }; //dummyPhoneNumbers params.to 
+    }
+
+    const clicksendBody = JSON.stringify({
+      messages: [
+        {
+          source: "nextjs",
+          // from: process.env.CLICKSEND_SENDER || undefined,
+          to: params.to,
+          body: params.message,
+        },
+      ],
+    })
+    console.log('ClickSend request body:', clicksendBody);
+
     const res = await fetch("https://rest.clicksend.com/v3/sms/send", {
       method: "POST",
       headers: {
         Authorization: `Basic ${auth}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        messages: [
-          {
-            source: "nextjs",
-            from: process.env.CLICKSEND_SENDER || undefined,
-            to: params.to,
-            body: params.message,
-          },
-        ],
-      }),
+      body: clicksendBody
     });
+    console.log("ClickSend response: ", await res.text())
     const data = (await res.json()) as {
       response_code?: string;
       data?: { messages?: Array<{ status?: string }> };
@@ -160,6 +176,7 @@ export async function sendSms(params: {
     if (!res.ok || data.response_code !== "SUCCESS") {
       return { channel: "sms", ok: false, error: data.response_code || `HTTP ${res.status}` };
     }
+
     return { channel: "sms", ok: true };
   } catch (err) {
     return { channel: "sms", ok: false, error: (err as Error).message };
@@ -175,7 +192,7 @@ export async function notify(params: {
   html?: string | null;
 }): Promise<NotifyResult[]> {
   return Promise.all([
-    sendEmail({ to: params.email, subject: params.subject, message: params.message, html: params.html ?? null }),
+    // sendEmail({ to: params.email, subject: params.subject, message: params.message, html: params.html ?? null }),
     sendSms({ to: params.phone, message: params.message }),
   ]);
 }

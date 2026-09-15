@@ -38,19 +38,19 @@ export async function notifyOnBooking(id: string) {
   const appt = await loadAppointmentParties(id);
   if (!appt) return;
   const message =
-    `Dear Dr. ${appt.doctor.name},\n\n` +
+    `Dear Dr. ${appt.doctor.name},\n` +
     `A new appointment has been booked and requires your review.` +
-    `\n\nPatient: ${appt.patient.name}\n` +
+    `\nPatient: ${appt.patient.name}\n` +
     `Patient contact: ${appt.patient.email ?? "(no email)"} | ${appt.patient.phone ?? "(no phone)"}\n` +
-    `Booked by: ${appt.nurse.name} ${appt.nurse.email ? `<${appt.nurse.email}>` : ""} ${appt.nurse.phone ? `(${appt.nurse.phone})` : ""}\n\n` +
+    `Booked by: ${appt.nurse.name} ${appt.nurse.email ? `<${appt.nurse.email}>` : ""} ${appt.nurse.phone ? `(${appt.nurse.phone})` : ""}\n` +
     `Appointment time: ${fmt(appt.date)}\n` +
-    `Appointment ID: ${appt.id}\n\n` +
+    `Appointment ID: ${appt.id}\n` +
     `Please review and take one of the following actions:` +
     `\n- Confirm the appointment if the time is suitable.` +
     `\n- Propose an alternative time if you need to reschedule.` +
     `\n- Contact the booking nurse for additional details.` +
-    `\n\nYou can view and manage this appointment here:` +
-    `\n${APP_URL}/appointments/${appt.id}\n\n` +
+    `\nYou can view and manage this appointment here:` +
+    `\n${APP_URL}/appointments/${appt.id}\n` +
     `Thank you,\nChronic Care Scheduler`;
 
   const html = `
@@ -89,32 +89,34 @@ export async function notifyOnConfirmation(id: string) {
   if (!appt) return;
   console.log("Sending email to this user:", appt.patient.email, appt.nurse.email);
   const patientMessage =
-    `Dear ${appt.patient.name},\n\n` +
+    `Dear ${appt.patient.name},\n` +
     `Your appointment with ${appt.doctor.name} has been confirmed.` +
-    `\n\nWhen: ${fmt(appt.date)}\n` +
-    `Appointment ID: ${appt.id}\n\n` +
-    `If you need to cancel or reschedule, please contact your care team as soon as possible.` +
-    `\n\nYou can view the appointment details here:` +
-    `\n${APP_URL}/appointments/${appt.id}\n\n` +
-    `We look forward to seeing you.\n\nBest regards,\nChronic Care Scheduler`;
+    `\nWhen: ${fmt(appt.date)}\n` +
 
+    `If you need to cancel or reschedule, please contact your care team as soon as possible.`;
+  // `Appointment ID: ${appt.id}\n` +
+  // `\nYou can view the appointment details here:` +
+  // `\n${APP_URL}/appointments/${appt.id}\n` +
+  // `We look forward to seeing you.\nBest regards,\nChronic Care Scheduler`
   const patientHtml = `
     <p>Dear ${appt.patient.name},</p>
     <p>Your appointment with <strong>${appt.doctor.name}</strong> has been <strong>confirmed</strong>.</p>
     <p><strong>When:</strong> ${fmt(appt.date)}<br/>
-    <strong>Appointment ID:</strong> ${appt.id}</p>
+    
     <p>If you need to cancel or reschedule, please contact your care team as soon as possible.</p>
-    <p><a href="${APP_URL}/appointments/${appt.id}">View appointment details</a></p>
-    <p>We look forward to seeing you.<br/>Best regards,<br/>Chronic Care Scheduler</p>
+    
+    
   `;
-
+  // <strong>Appointment ID:</strong> ${appt.id}</p>
+  // <p>We look forward to seeing you.<br/>Best regards,<br/>Chronic Care Scheduler</p>
+  // <p><a href="${APP_URL}/appointments/${appt.id}">View appointment details</a></p>
   const nurseMessage =
-    `Hello ${appt.nurse.name},\n\n` +
+    `Hello ${appt.nurse.name},\n` +
     `The appointment you booked for ${appt.patient.name} has been confirmed by ${appt.doctor.name}.` +
-    `\n\nWhen: ${fmt(appt.date)}\n` +
-    `Appointment ID: ${appt.id}\n\n` +
+    `\nWhen: ${fmt(appt.date)}\n` +
+    `Appointment ID: ${appt.id}\n` +
     `No further action is required unless you need to follow up with the patient.` +
-    `\n\nThank you for coordinating care.\nChronic Care Scheduler`;
+    `\nThank you for coordinating care.\nChronic Care Scheduler`;
 
   const nurseHtml = `
     <p>Hello ${appt.nurse.name},</p>
@@ -148,13 +150,13 @@ export async function notifyReminder(id: string) {
   const appt = await loadAppointmentParties(id);
   if (!appt) return;
   const message =
-    `Hello ${appt.patient.name},\n\n` +
+    `Hello ${appt.patient.name},\n` +
     `This is a friendly reminder of your upcoming appointment with ${appt.doctor.name}.` +
-    `\n\nWhen: ${fmt(appt.date)}\n` +
-    `Appointment ID: ${appt.id}\n\n` +
+    `\nWhen: ${fmt(appt.date)}\n` +
+    `Appointment ID: ${appt.id}\n` +
     `Please arrive 10–15 minutes early to allow time for check-in. If you need to cancel or reschedule,` +
     ` contact us or use the appointment link below at your earliest convenience.` +
-    `\n\nAppointment details: ${APP_URL}/appointments/${appt.id}\n\n` +
+    `\nAppointment details: ${APP_URL}/appointments/${appt.id}\n` +
     `Thank you,\nChronic Care Scheduler`;
 
   const patientHtml = `
@@ -168,12 +170,12 @@ export async function notifyReminder(id: string) {
   `;
 
   const doctorMessage =
-    `Hello ${appt.doctor.name},\n\n` +
+    `Hello ${appt.doctor.name},\n` +
     `Reminder: you have an upcoming appointment with ${appt.patient.name}.` +
-    `\n\nWhen: ${fmt(appt.date)}\n` +
-    `Appointment ID: ${appt.id}\n\n` +
+    `\nWhen: ${fmt(appt.date)}\n` +
+    `Appointment ID: ${appt.id}\n` +
     `Please review the patient's record ahead of the visit if needed.` +
-    `\n\nDetails: ${APP_URL}/appointments/${appt.id}\n\n` +
+    `\nDetails: ${APP_URL}/appointments/${appt.id}\n` +
     `Best regards,\nChronic Care Scheduler`;
 
   const doctorHtml = `

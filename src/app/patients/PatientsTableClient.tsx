@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Pagination, { PAGE_SIZE, paginate, pageCount } from "@/components/Pagination";
 import IconButton from "@/components/IconButton";
-import { TrashIcon, SearchIcon } from "@/components/icons";
+import { TrashIcon, SearchIcon, PencilIcon, CheckIcon, XIcon } from "@/components/icons";
 
 type Row = {
     id: string;
@@ -30,6 +30,8 @@ export default function PatientsTableClient({ initialRows, currentUserId }: { in
     const [sortBy, setSortBy] = useState<SortKey>("createdAt");
     const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
     const [selected, setSelected] = useState<Record<string, boolean>>({});
+    const [editId, setEditId] = useState<string | null>(null);
+    const [edit, setEdit] = useState({ name: "", email: "", phone: "" });
 
     useEffect(() => {
         setRows(initialRows);
@@ -87,6 +89,51 @@ export default function PatientsTableClient({ initialRows, currentUserId }: { in
 
     const pageRows = paginate(filtered, page, pageSize);
     const selectedCount = Object.keys(selected).filter((k) => selected[k]).length;
+
+    function startEdit(row: Row) {
+        setEditId(row.id);
+        setEdit({
+            name: row.name,
+            email: row.email || "",
+            phone: row.phone || "",
+        });
+        setError(null);
+    }
+
+    async function saveEdit(id: string) {
+        if (!edit.name.trim()) {
+            setError("Name is required");
+            return;
+        }
+
+        setBusy(id);
+        setError(null);
+        try {
+            const res = await fetch(`/api/patients/${id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(edit),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                setError(data.error || "Could not update patient");
+                return;
+            }
+
+            setRows((r) => r.map((row) => row.id === id ? {
+                ...row,
+                name: data.patient.name,
+                email: data.patient.email,
+                phone: data.patient.phone,
+            } : row));
+            setEditId(null);
+            router.refresh();
+        } catch (err) {
+            setError(String(err));
+        } finally {
+            setBusy(null);
+        }
+    }
 
     async function remove(id: string) {
         if (!confirm("Delete this patient? This cannot be undone.")) return;
@@ -208,34 +255,78 @@ export default function PatientsTableClient({ initialRows, currentUserId }: { in
                             {filtered.length === 0 && (
                                 <tr><td colSpan={8} className="px-4 py-8 text-center text-slate-400">No patients found.</td></tr>
                             )}
-                            {pageRows.map((row) => (
-                                <tr key={row.id} className="align-top hover:bg-slate-50">
-                                    <td className="px-4 py-3">
-                                        <input type="checkbox" checked={!!selected[row.id]} onChange={() => toggleSelect(row.id)} aria-label={`Select ${row.name}`} />
-                                    </td>
-                                    <td className="px-4 py-3 font-medium text-slate-700">{row.name}</td>
-                                    <td className="px-4 py-3 text-slate-500">{row.code}</td>
-                                    <td className="px-4 py-3 text-slate-500">{row.email || "—"}</td>
-                                    <td className="px-4 py-3 text-slate-500">{row.phone || "—"}</td>
-                                    <td className="px-4 py-3 text-slate-500">{row.createdByName || "—"}</td>
-                                    <td className="px-4 py-3 text-slate-500">{row.createdAt ? new Date(row.createdAt).toLocaleString() : "—"}</td>
-                                    <td className="px-4 py-3">
-                                        <div className="flex items-center gap-2">
-                                            <IconButton label="Delete" variant="danger" disabled={busy === row.id} onClick={() => remove(row.id)}>
-                                                <TrashIcon />
-                                            </IconButton>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
+                            {pageRows.map((row) => {
+                                const editing = editId === row.id;
+                                return (
+                                    <tr key={row.id} className="align-top hover:bg-slate-50">
+                                        <td className="px-4 py-3">
+                                            <input type="checkbox" checked={!!selected[row.id]} onChange={() => toggleSelect(row.id)} aria-label={`Select ${row.name}`} />
+                                        </td>
+                                        <td className="px-4 py-3 font-medium text-slate-700">
+                                            {editing ? (
+                                                <input
+                                                    className="input w-full min-w-[140px]"
+                                                    value={edit.name}
+                                                    onChange={(e) => setEdit({ ...edit, name: e.target.value })}
+                                                    aria-label={`Edit patient name for ${row.name}`}
+                                                />
+                                            ) : row.name}
+                                        </td>
+                                        <td className="px-4 py-3 text-slate-500">{row.code}</td>
+                                        <td className="px-4 py-3 text-slate-500">
+                                            {editing ? (
+                                                <input
+                                                    type="email"
+                                                    className="input w-full min-w-[170px]"
+                                                    value={edit.email}
+                                                    onChange={(e) => setEdit({ ...edit, email: e.target.value })}
+                                                    aria-label={`Edit patient email for ${row.name}`}
+                                                />
+                                            ) : (row.email || "—")}
+                                        </td>
+                                        <td className="px-4 py-3 text-slate-500">
+                                            {editing ? (
+                                                <input
+                                                    className="input w-full min-w-[130px]"
+                                                    value={edit.phone}
+                                                    onChange={(e) => setEdit({ ...edit, phone: e.target.value })}
+                                                    aria-label={`Edit patient phone for ${row.name}`}
+                                                />
+                                            ) : (row.phone || "—")}
+                                        </td>
+                                        <td className="px-4 py-3 text-slate-500">{row.createdByName || "—"}</td>
+                                        <td className="px-4 py-3 text-slate-500">{row.createdAt ? new Date(row.createdAt).toLocaleString() : "—"}</td>
+                                        <td className="px-4 py-3">
+                                            <div className="flex items-center gap-2">
+                                                {editing ? (
+                                                    <>
+                                                        <IconButton label="Save patient" variant="success" disabled={busy === row.id} onClick={() => saveEdit(row.id)}>
+                                                            <CheckIcon />
+                                                        </IconButton>
+                                                        <IconButton label="Cancel edit" variant="default" onClick={() => setEditId(null)}>
+                                                            <XIcon />
+                                                        </IconButton>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <IconButton label="Edit patient" variant="default" onClick={() => startEdit(row)}>
+                                                            <PencilIcon />
+                                                        </IconButton>
+                                                        <IconButton label="Delete" variant="danger" disabled={busy === row.id} onClick={() => remove(row.id)}>
+                                                            <TrashIcon />
+                                                        </IconButton>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
                 <Pagination page={page} total={filtered.length} size={pageSize} onChange={setPage} />
             </div>
-
-
-
         </div>
     );
 }
