@@ -192,7 +192,7 @@ export async function notify(params: {
   html?: string | null;
 }): Promise<NotifyResult[]> {
   return Promise.all([
-    // sendEmail({ to: params.email, subject: params.subject, message: params.message, html: params.html ?? null }),
+    sendEmail({ to: params.email, subject: params.subject, message: params.message, html: params.html ?? null }),
     sendSms({ to: params.phone, message: params.message }),
   ]);
 }
