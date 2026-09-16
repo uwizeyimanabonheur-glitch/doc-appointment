@@ -91,9 +91,8 @@ export async function notifyOnConfirmation(id: string) {
   const patientMessage =
     `Dear ${appt.patient.name},\n` +
     `Your appointment with ${appt.doctor.name} has been confirmed.` +
-    `\nWhen: ${fmt(appt.date)}\n` +
-
-    `If you need to cancel or reschedule, please contact your care team as soon as possible.`;
+    `\nWhen: ${fmt(appt.date)}\n`;
+  // `If you need to cancel or reschedule, please contact your care team as soon as possible.`
   // `Appointment ID: ${appt.id}\n` +
   // `\nYou can view the appointment details here:` +
   // `\n${APP_URL}/appointments/${appt.id}\n` +
@@ -102,11 +101,8 @@ export async function notifyOnConfirmation(id: string) {
     <p>Dear ${appt.patient.name},</p>
     <p>Your appointment with <strong>${appt.doctor.name}</strong> has been <strong>confirmed</strong>.</p>
     <p><strong>When:</strong> ${fmt(appt.date)}<br/>
-    
-    <p>If you need to cancel or reschedule, please contact your care team as soon as possible.</p>
-    
-    
   `;
+  // <p>If you need to cancel or reschedule, please contact your care team as soon as possible.</p>
   // <strong>Appointment ID:</strong> ${appt.id}</p>
   // <p>We look forward to seeing you.<br/>Best regards,<br/>Chronic Care Scheduler</p>
   // <p><a href="${APP_URL}/appointments/${appt.id}">View appointment details</a></p>

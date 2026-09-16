@@ -152,7 +152,7 @@ export async function sendSms(params: {
       messages: [
         {
           source: "nextjs",
-          // from: process.env.CLICKSEND_SENDER || undefined,
+          from: process.env.CLICKSEND_SENDER || undefined,
           to: params.to,
           body: params.message,
         },
