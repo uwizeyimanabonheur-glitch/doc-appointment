@@ -91,21 +91,22 @@ export async function notifyOnConfirmation(id: string) {
   const patientMessage =
     `Dear ${appt.patient.name},\n` +
     `Your appointment with ${appt.doctor.name} has been confirmed.` +
-    `\nWhen: ${fmt(appt.date)}\n`;
-  // `If you need to cancel or reschedule, please contact your care team as soon as possible.`
-  // `Appointment ID: ${appt.id}\n` +
-  // `\nYou can view the appointment details here:` +
-  // `\n${APP_URL}/appointments/${appt.id}\n` +
-  // `We look forward to seeing you.\nBest regards,\nChronic Care Scheduler`
+    `\nWhen: ${fmt(appt.date)}\n` +
+    `If you need to cancel or reschedule, please contact your care team as soon as possible.` +
+    `Appointment ID: ${appt.id}\n` +
+    `\nYou can view the appointment details here:` +
+    `\n${APP_URL}/appointments/${appt.id}\n` +
+    `We look forward to seeing you.\nBest regards,\nChronic Care Scheduler`;
+
   const patientHtml = `
     <p>Dear ${appt.patient.name},</p>
     <p>Your appointment with <strong>${appt.doctor.name}</strong> has been <strong>confirmed</strong>.</p>
     <p><strong>When:</strong> ${fmt(appt.date)}<br/>
+    <strong>Appointment ID:</strong> ${appt.id}</p>
+    <p><a href="${APP_URL}/appointments/${appt.id}">View appointment details</a></p>
+    <p>If you need to cancel or reschedule, please contact your care team as soon as possible.</p>
+    <p>We look forward to seeing you.<br/>Best regards,<br/>Chronic Care Scheduler</p>
   `;
-  // <p>If you need to cancel or reschedule, please contact your care team as soon as possible.</p>
-  // <strong>Appointment ID:</strong> ${appt.id}</p>
-  // <p>We look forward to seeing you.<br/>Best regards,<br/>Chronic Care Scheduler</p>
-  // <p><a href="${APP_URL}/appointments/${appt.id}">View appointment details</a></p>
   const nurseMessage =
     `Hello ${appt.nurse.name},\n` +
     `The appointment you booked for ${appt.patient.name} has been confirmed by ${appt.doctor.name}.` +

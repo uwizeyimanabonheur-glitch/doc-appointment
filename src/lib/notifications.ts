@@ -53,6 +53,12 @@ export async function sendEmail(params: {
     return { channel: "email", ok: false, skipped: true };
   }
 
+  // If email is dummy (contains example.com), skip sending and log to console.
+  if (params.to && params.to.includes("example.com")) {
+    console.info(`[email:skipped] to=${params.to} subject="${params.subject}"\n${params.message}`);
+    return { channel: "email", ok: false, skipped: true };
+  }
+
   try {
     // Build transport config: prefer explicit SMTP config, otherwise Gmail.
     let transportOptions: any;
@@ -193,6 +199,6 @@ export async function notify(params: {
 }): Promise<NotifyResult[]> {
   return Promise.all([
     sendEmail({ to: params.email, subject: params.subject, message: params.message, html: params.html ?? null }),
-    sendSms({ to: params.phone, message: params.message }),
+    // sendSms({ to: params.phone, message: params.message }),
   ]);
 }
