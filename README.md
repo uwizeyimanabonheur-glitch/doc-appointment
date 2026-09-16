@@ -193,4 +193,5 @@ src/
   (`phone`, patient `email`/`phone`), named relations and a `reminderSent`
   flag so notifications and role-scoping actually work.
 
-REMOVED DIRECT URL
+==========================
+GOOGLE APP FOR GMAIL
