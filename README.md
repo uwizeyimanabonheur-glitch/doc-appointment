@@ -194,4 +194,4 @@ src/
   flag so notifications and role-scoping actually work.
 
 ==========================
-UNCOMMENTED THE LINE TO SEND EMAILS
+DISABLED SMS - CLICKSEND IS NOT WORKING
