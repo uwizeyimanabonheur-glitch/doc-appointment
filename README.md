@@ -194,4 +194,4 @@ src/
   flag so notifications and role-scoping actually work.
 
 ==========================
-GOOGLE APP FOR GMAIL
+UNCOMMENTED THE LINE TO SEND EMAILS
